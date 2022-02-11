@@ -15,6 +15,7 @@ describe("Votation", () => {
 	});
 
 	it("register user", async () => {
+		expect(await votation.isRegisterUser(user)).to.be.equal(false);
 		await votation.connect(userSigner).register();
 		expect(await votation.isRegisterUser(user)).to.be.equal(true);
 	});
