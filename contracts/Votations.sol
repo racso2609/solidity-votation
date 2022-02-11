@@ -3,7 +3,7 @@ pragma solidity ^0.8.7;
 contract Votations {
 	mapping(address => bool) user;
 	mapping(uint256 => mapping(uint32 => address)) candidates;
-	mapping(address => uint32) votes;
+	mapping(uint256 => mapping(address => uint32)) votes;
 
 	//TODO: Investigato how to return strings
 	struct Votation {
