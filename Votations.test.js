@@ -24,36 +24,29 @@ describe("Votation", () => {
 	describe("Votations", () => {
 		beforeEach(async () => {
 			await votation.connect(userSigner).register();
-			// candidates =
-			[addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
-			candidates = [
-				addr1.address,
-				addr2.address,
-				addr3.address,
-				addr4.address,
-				addr5.address,
-			];
 		});
 
 		it("create", async () => {
+			[addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
 			const tx = await votation.connect(userSigner).createVotations(
 				// "President",
-				candidates,
+				[
+					addr1.address,
+					addr2.address,
+					addr3.address,
+					addr4.address,
+					addr5.address,
+				],
 				1
 			);
-			await printGas(tx);
+			// await printGas(tx);
 			await tx.wait();
 			const votationId = Number(tx.value);
-			const [rounds, actualRounds] = await votation.getVotation(votationId);
-
+			console.log("tx", tx);
+			const newVotation = await votation.getVotation(votationId);
+			console.log(newVotation);
 			// expect(newVotation.name).to.be.equal("President");
-			expect(rounds).to.be.equal(1);
-			expect(actualRounds).to.be.equal(0);
-		});
-		it("event emmited", async () => {
-			await expect(votation.connect(userSigner).createVotations(candidates, 1))
-				.to.emit(votation, "VotationEvent")
-				.withArgs(0);
+			expect(newVotation.candidate[0]).to.be.equal(addr1);
 		});
 	});
 });
