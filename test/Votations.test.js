@@ -39,28 +39,28 @@ describe("Votation", () => {
 
 		it("error creating votation, user not owner", async () => {
 			await expect(
-				votation.connect(userSigner).createVotations("President", candidates, 1)
+				votation.connect(userSigner).createVotations("President", candidates)
 			).to.be.revertedWith("Ownable: caller is not the owner");
 		});
 
 		it("creating", async () => {
 			const tx = await votation
 				.connect(deployerSigner)
-				.createVotations("President", candidates, 1);
+				.createVotations("President", candidates);
 			await printGas(tx);
 			await tx.wait();
 			const votationId = Number(tx.value);
 			const newVotation = await votation.votations(votationId);
 
 			expect(newVotation.name).to.be.equal("President");
-			expect(newVotation.rounds).to.be.equal(1);
-			expect(newVotation.actualRounds).to.be.equal(0);
+			// expect(newVotation.rounds).to.be.equal(1);
+			// expect(newVotation.actualRounds).to.be.equal(0);
 		});
 		it("event emmited", async () => {
 			await expect(
 				votation
 					.connect(deployerSigner)
-					.createVotations("President", candidates, 1)
+					.createVotations("President", candidates)
 			)
 				.to.emit(votation, "CreateVotation")
 				.withArgs(0, "President");
@@ -80,7 +80,7 @@ describe("Votation", () => {
 			await votation.connect(addr1).register();
 			await votation
 				.connect(deployerSigner)
-				.createVotations("President", candidates, 1);
+				.createVotations("President", candidates);
 			eightDays = 8 * 24 * 60 * 60;
 		});
 
@@ -88,6 +88,11 @@ describe("Votation", () => {
 			await expect(
 				votation.connect(userSigner).makeVote(0, 6)
 			).to.be.revertedWith("Candidate does not exist!");
+		});
+		it("fail votation does not exist ", async () => {
+			await expect(
+				votation.connect(userSigner).makeVote(1, 1)
+			).to.be.revertedWith("Votation finished");
 		});
 		it("fail user not register ", async () => {
 			await expect(

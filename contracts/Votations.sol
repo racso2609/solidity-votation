@@ -5,7 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Votations is Ownable {
 	mapping(address => bool) user;
 	/**
-	 * @dev get canditates by votationId and candidate index.
+	 * @dev get canditates by votationId and candidate index .
+   candidate index start on 1 on this way we can heck if you already vote if you vote != 0
 	 */
 	mapping(uint256 => mapping(uint32 => address)) public candidates;
 	/**
@@ -15,8 +16,8 @@ contract Votations is Ownable {
 
 	struct Votation {
 		string name;
-		uint32 rounds;
-		uint32 actualRounds;
+		// uint32 rounds;
+		// uint32 actualRounds;
 		uint256 startTime;
 	}
 	/**
@@ -44,14 +45,22 @@ contract Votations is Ownable {
 
 	event CreateVotation(uint256 indexed votationId, string indexed name);
 
-	function createVotations(
-		string memory _name,
-		address[] memory _candidates,
-		uint32 _rounds
-	) external onlyOwner returns (uint256) {
+	/**
+     * @dev create votation round with a {_name} candidates {_candidates}.
+     *
+     . {_name} should be a string and {_candidate} array of address this address dont need to be register but should register if they want vote
+     *
+     */
+
+	function createVotations(string memory _name, address[] memory _candidates)
+		external
+		// uint32 _rounds
+		onlyOwner
+		returns (uint256)
+	{
 		Votation memory newVotation;
 		newVotation.name = _name;
-		newVotation.rounds = _rounds;
+		// newVotation.rounds = _rounds;
 		newVotation.startTime = block.timestamp;
 		for (uint32 i = 0; i < _candidates.length; i++) {
 			candidates[votationsQuantity][i + 1] = _candidates[i];
@@ -76,12 +85,20 @@ contract Votations is Ownable {
 		_;
 	}
 
+	/**
+     * @dev vote for a candidate only if you are register and the votation is not ended.
+     you should provide a valie {_votationId} {_candidate}
+     *
+     *
+     */
+
 	function makeVote(uint256 _votationId, uint32 _candidate)
 		external
 		onlyRegister
 		votationNotFinished(_votationId)
 	{
 		require(_candidate > 0, "Candidate does not exist!");
+		// require(votations[_votationId].name , "Votation does not exist!");
 		require(
 			candidates[_votationId][_candidate] != address(0x0),
 			"Candidate does not exist!"
@@ -93,7 +110,6 @@ contract Votations is Ownable {
 
 		require(votes[_votationId][msg.sender] == 0, "You only can vote once!");
 		votes[_votationId][msg.sender] = _candidate;
-    emit Vote(_votationId,_candidate);
-
+		emit Vote(_votationId, _candidate);
 	}
 }
