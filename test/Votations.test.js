@@ -1,6 +1,8 @@
 const { expect } = require("chai");
 const { fixture } = deployments;
 const { printGas } = require("../utils/transactions.js");
+// const { solidity } = require("ethereum-waffle");
+
 
 describe("Votation", () => {
 	beforeEach(async () => {
@@ -23,7 +25,7 @@ describe("Votation", () => {
 	});
 	describe("Votations", () => {
 		beforeEach(async () => {
-			await votation.connect(userSigner).register();
+			// await votation.connect(userSigner).register();
 			// candidates =
 			[addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
 			candidates = [
@@ -35,8 +37,18 @@ describe("Votation", () => {
 			];
 		});
 
-		it("create", async () => {
-			const tx = await votation.connect(userSigner).createVotations(
+		it("error creating votation, user not owner", async () => {
+			await expect(
+				votation.connect(userSigner).createVotations(
+					// "President",
+					candidates,
+					1
+				)
+			).to.be.revertedWith("Ownable: caller is not the owner");
+		});
+
+		it("creating", async () => {
+			const tx = await votation.connect(deployerSigner).createVotations(
 				// "President",
 				candidates,
 				1
@@ -44,14 +56,14 @@ describe("Votation", () => {
 			await printGas(tx);
 			await tx.wait();
 			const votationId = Number(tx.value);
-			const [rounds, actualRounds] = await votation.getVotation(votationId);
+			const [rounds, actualRounds] = await votation.votations(votationId);
 
 			// expect(newVotation.name).to.be.equal("President");
 			expect(rounds).to.be.equal(1);
 			expect(actualRounds).to.be.equal(0);
 		});
 		it("event emmited", async () => {
-			await expect(votation.connect(userSigner).createVotations(candidates, 1))
+			await expect(votation.connect(deployerSigner).createVotations(candidates, 1))
 				.to.emit(votation, "VotationEvent")
 				.withArgs(0);
 		});
