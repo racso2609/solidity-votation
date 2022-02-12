@@ -40,7 +40,7 @@ describe("Votation", () => {
 		it("error creating votation, user not owner", async () => {
 			await expect(
 				votation.connect(userSigner).createVotations(
-					// "President",
+					"President",
 					candidates,
 					1
 				)
@@ -49,23 +49,23 @@ describe("Votation", () => {
 
 		it("creating", async () => {
 			const tx = await votation.connect(deployerSigner).createVotations(
-				// "President",
+				"President",
 				candidates,
 				1
 			);
 			await printGas(tx);
 			await tx.wait();
 			const votationId = Number(tx.value);
-			const [rounds, actualRounds] = await votation.votations(votationId);
+			const newVotation = await votation.votations(votationId);
 
-			// expect(newVotation.name).to.be.equal("President");
-			expect(rounds).to.be.equal(1);
-			expect(actualRounds).to.be.equal(0);
+			expect(newVotation.name).to.be.equal("President");
+			expect(newVotation.rounds).to.be.equal(1);
+			expect(newVotation.actualRounds).to.be.equal(0);
 		});
 		it("event emmited", async () => {
-			await expect(votation.connect(deployerSigner).createVotations(candidates, 1))
+			await expect(votation.connect(deployerSigner).createVotations("President",candidates, 1))
 				.to.emit(votation, "VotationEvent")
-				.withArgs(0);
+				.withArgs(0,"President");
 		});
 	});
 });

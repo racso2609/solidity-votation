@@ -8,7 +8,7 @@ contract Votations is Ownable {
 
 	//TODO: Investigato how to return strings
 	struct Votation {
-		// string name;
+		string name;
 		uint32 rounds;
 		uint32 actualRounds;
 	}
@@ -30,22 +30,22 @@ contract Votations is Ownable {
 		_;
 	}
 
-	event VotationEvent(uint256 indexed votationId);
+	event VotationEvent(uint256 indexed votationId, string indexed name);
 
 	function createVotations(
-		// string memory _name,
+		string memory _name,
 		address[] memory _candidates,
 		uint32 _rounds
 	) external onlyOwner returns (uint256) {
 		Votation memory newVotation;
-		// newVotation.name = _name;
+		newVotation.name = _name;
 		newVotation.rounds = _rounds;
 		for (uint32 i = 0; i < _candidates.length; i++) {
 			candidates[votationsQuantity][i] = _candidates[i];
 		}
 		votationsQuantity++;
 		votations[votationsQuantity - 1] = newVotation;
-		emit VotationEvent(votationsQuantity - 1);
+		emit VotationEvent(votationsQuantity - 1, _name);
 		return votationsQuantity - 1;
 	}
 }
