@@ -3,7 +3,9 @@
   "scripts": {
     "prettier": "prettier --write 'contracts/**/*.sol'",
     "lint": "prettier --list-different 'contracts/**/*.sol'",
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "compile": "npmx hardhat compile",
+    "deploy": "node ./deploy/index.js"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",

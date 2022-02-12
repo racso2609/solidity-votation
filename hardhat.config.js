@@ -44,6 +44,7 @@ module.exports = {
     deployer: 0,
     feeRecipient: 1,
     user: 2,
+    userNotRegister: 3,
   },
   gasReporter: {
     currency: "USD",
