@@ -33,10 +33,12 @@ contract Votations is Ownable {
      . the default value of {user} is false if you are register the value is true
      *
      */
+    event Register(address indexed user);
 
 	function register() public {
 		require(user[msg.sender] != true, "User already register");
 		user[msg.sender] = true;
+    emit Register(msg.sender);
 	}
 
 	function isRegisterUser(address _user) external view returns (bool) {
@@ -58,6 +60,7 @@ contract Votations is Ownable {
 		onlyOwner
 		returns (uint256)
 	{
+    require(_candidates.length < 6,"Max 5 candidates per votation");
 		Votation memory newVotation;
 		newVotation.name = _name;
 		// newVotation.rounds = _rounds;
