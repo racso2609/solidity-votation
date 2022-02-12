@@ -1,9 +1,16 @@
 pragma solidity ^0.8.7;
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Votations is Ownable {
 	mapping(address => bool) user;
+	/**
+	 * @dev get canditates by votationId and candidate index.
+	 */
 	mapping(uint256 => mapping(uint32 => address)) public candidates;
+	/**
+	 * @dev get votes by votationId and userAddress.
+	 */
 	mapping(uint256 => mapping(address => uint32)) public votes;
 
 	struct Votation {
@@ -12,9 +19,19 @@ contract Votations is Ownable {
 		uint32 actualRounds;
 		uint256 startTime;
 	}
+	/**
+	 * @dev {votationsQuantity} a register of all votations done and is used for calculate the votationId.
+	 */
 
 	uint256 votationsQuantity;
 	mapping(uint256 => Votation) public votations;
+
+	/**
+     * @dev Register user using {msg.sender}.
+     *
+     . the default value of {user} is false if you are register the value is true
+     *
+     */
 
 	function register() public {
 		require(user[msg.sender] != true, "User already register");
@@ -62,7 +79,7 @@ contract Votations is Ownable {
 	function makeVote(uint256 _votationId, uint32 _candidate)
 		external
 		onlyRegister
-    votationNotFinished(_votationId)
+		votationNotFinished(_votationId)
 	{
 		require(_candidate > 0, "Candidate does not exist!");
 		require(
@@ -76,5 +93,7 @@ contract Votations is Ownable {
 
 		require(votes[_votationId][msg.sender] == 0, "You only can vote once!");
 		votes[_votationId][msg.sender] = _candidate;
+    emit Vote(_votationId,_candidate);
+
 	}
 }

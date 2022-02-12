@@ -7,10 +7,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 	// Upgradeable Proxy
 	await deploy("Votations", {
 		from: deployer,
-		proxy: {
-			owner: deployer,
-		},
-
 		log: true,
 	});
 };

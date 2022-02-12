@@ -119,5 +119,10 @@ describe("Votation", () => {
 				"Votation finished"
 			);
 		});
+		it("event emmited", async () => {
+			await expect(votation.connect(userSigner).makeVote(0, 1))
+				.to.emit(votation, "Vote")
+				.withArgs(0, 1);
+		});
 	});
 });
