@@ -32,7 +32,7 @@ describe("Votation", () => {
 		beforeEach(async () => {
 			// await votation.connect(userSigner).register();
 			// candidates =
-			[addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
+			[addr1, addr2, addr3, addr4, addr5, addr6] = await ethers.getSigners();
 			candidates = [
 				addr1.address,
 				addr2.address,
@@ -46,6 +46,11 @@ describe("Votation", () => {
 			await expect(
 				votation.connect(userSigner).createVotations("President", candidates)
 			).to.be.revertedWith("Ownable: caller is not the owner");
+		});
+		it("fail creating more than 5 candidates", async () => {
+			 expect(votation
+				.connect(deployerSigner)
+        .createVotations("President", [...candidates, addr6.address])).to.be.revertedWith("Max 5 candidates per votation");
 		});
 
 		it("creating", async () => {

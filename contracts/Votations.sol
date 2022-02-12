@@ -60,6 +60,7 @@ contract Votations is Ownable {
 		onlyOwner
 		returns (uint256)
 	{
+    require(_candidates.length < 6,"Max 5 candidates per votation");
 		Votation memory newVotation;
 		newVotation.name = _name;
 		// newVotation.rounds = _rounds;
