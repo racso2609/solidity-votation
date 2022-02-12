@@ -33,10 +33,12 @@ contract Votations is Ownable {
      . the default value of {user} is false if you are register the value is true
      *
      */
+    event Register(address indexed user);
 
 	function register() public {
 		require(user[msg.sender] != true, "User already register");
 		user[msg.sender] = true;
+    emit Register(msg.sender);
 	}
 
 	function isRegisterUser(address _user) external view returns (bool) {

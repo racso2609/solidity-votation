@@ -22,6 +22,11 @@ describe("Votation", () => {
 			await votation.connect(userSigner).register();
 			expect(await votation.isRegisterUser(user)).to.be.equal(true);
 		});
+		it("event emmited", async () => {
+			await expect(votation.connect(userSigner).register())
+				.to.emit(votation, "Register")
+				.withArgs(user);
+		});
 	});
 	describe("create Votations", () => {
 		beforeEach(async () => {
