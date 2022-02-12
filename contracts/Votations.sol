@@ -6,7 +6,6 @@ contract Votations is Ownable {
 	mapping(uint256 => mapping(uint32 => address)) candidates;
 	mapping(uint256 => mapping(address => uint32)) votes;
 
-	//TODO: Investigato how to return strings
 	struct Votation {
 		string name;
 		uint32 rounds;
@@ -30,7 +29,7 @@ contract Votations is Ownable {
 		_;
 	}
 
-	event VotationEvent(uint256 indexed votationId, string indexed name);
+	event CreateVotation(uint256 indexed votationId, string indexed name);
 
 	function createVotations(
 		string memory _name,
@@ -45,7 +44,7 @@ contract Votations is Ownable {
 		}
 		votationsQuantity++;
 		votations[votationsQuantity - 1] = newVotation;
-		emit VotationEvent(votationsQuantity - 1, _name);
+		emit CreateVotation(votationsQuantity - 1, _name);
 		return votationsQuantity - 1;
 	}
 }

@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/racso/Programming/voting-app/contracts/Votations.sol": {
-      "lastModificationDate": 1644686635928,
-      "contentHash": "cb7a24e31fd40a7eece29cbfa8d3f8de",
+      "lastModificationDate": 1644686738010,
+      "contentHash": "2869d1e8c52e6780c295f00854e5913d",
       "sourceName": "contracts/Votations.sol",
       "solcConfig": {
         "version": "0.8.7",

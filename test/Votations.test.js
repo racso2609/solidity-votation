@@ -64,7 +64,7 @@ describe("Votation", () => {
 		});
 		it("event emmited", async () => {
 			await expect(votation.connect(deployerSigner).createVotations("President",candidates, 1))
-				.to.emit(votation, "VotationEvent")
+				.to.emit(votation, "CreateVotation")
 				.withArgs(0,"President");
 		});
 	});
