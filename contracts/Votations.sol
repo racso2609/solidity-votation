@@ -1,6 +1,7 @@
 pragma solidity ^0.8.7;
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Votations {
+contract Votations is Ownable {
 	mapping(address => bool) user;
 	mapping(uint256 => mapping(uint32 => address)) candidates;
 	mapping(uint256 => mapping(address => uint32)) votes;
@@ -13,7 +14,7 @@ contract Votations {
 	}
 
 	uint256 votationsQuantity;
-	mapping(uint256 => Votation) votations;
+	mapping(uint256 => Votation) public votations;
 
 	function register() public {
 		require(user[msg.sender] != true, "User already register");
@@ -35,7 +36,7 @@ contract Votations {
 		// string memory _name,
 		address[] memory _candidates,
 		uint32 _rounds
-	) external onlyRegister returns (uint256) {
+	) external onlyOwner returns (uint256) {
 		Votation memory newVotation;
 		// newVotation.name = _name;
 		newVotation.rounds = _rounds;
@@ -46,22 +47,5 @@ contract Votations {
 		votations[votationsQuantity - 1] = newVotation;
 		emit VotationEvent(votationsQuantity - 1);
 		return votationsQuantity - 1;
-	}
-
-	function getVotation(uint256 _votationId)
-		external
-		view
-		returns (
-			// memory string name,
-			uint32,
-			uint32
-		)
-	{
-		require(votationsQuantity > _votationId, "votation does not exits");
-
-		Votation memory votation = votations[_votationId];
-		uint32 rounds = votation.rounds;
-		uint32 actualRounds = votation.actualRounds;
-		return (rounds, actualRounds);
 	}
 }
