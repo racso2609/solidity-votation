@@ -44,33 +44,35 @@ describe("Votation", () => {
 
 		it("error creating votation, user not owner", async () => {
 			await expect(
-				votation.connect(userSigner).createVotations("President", candidates)
+				votation.connect(userSigner).createVotations("President", candidates, 0)
 			).to.be.revertedWith("Ownable: caller is not the owner");
 		});
 		it("fail creating more than 5 candidates", async () => {
-			 expect(votation
-				.connect(deployerSigner)
-        .createVotations("President", [...candidates, addr6.address])).to.be.revertedWith("Max 5 candidates per votation");
+			expect(
+				votation
+					.connect(deployerSigner)
+					.createVotations("President", [...candidates, addr6.address], 0)
+			).to.be.revertedWith("Max 5 candidates per votation");
 		});
 
 		it("creating", async () => {
 			const tx = await votation
 				.connect(deployerSigner)
-				.createVotations("President", candidates);
+				.createVotations("President", candidates, 0);
 			await printGas(tx);
 			await tx.wait();
 			const votationId = Number(tx.value);
 			const newVotation = await votation.votations(votationId);
 
 			expect(newVotation.name).to.be.equal("President");
-			// expect(newVotation.rounds).to.be.equal(1);
-			// expect(newVotation.actualRounds).to.be.equal(0);
+			expect(newVotation.rounds).to.be.equal(0);
+			expect(newVotation.actualRound).to.be.equal(0);
 		});
 		it("event emmited", async () => {
 			await expect(
 				votation
 					.connect(deployerSigner)
-					.createVotations("President", candidates)
+					.createVotations("President", candidates, 0)
 			)
 				.to.emit(votation, "CreateVotation")
 				.withArgs(0, "President");
@@ -90,7 +92,7 @@ describe("Votation", () => {
 			await votation.connect(addr1).register();
 			await votation
 				.connect(deployerSigner)
-				.createVotations("President", candidates);
+				.createVotations("President", candidates, 0);
 			eightDays = 8 * 24 * 60 * 60;
 		});
 
@@ -112,7 +114,7 @@ describe("Votation", () => {
 		it("vote ", async () => {
 			const tx = await votation.connect(userSigner).makeVote(0, 1);
 			await tx.wait();
-			const vote = await votation.votes(0, user);
+			const vote = await votation.votes(0, 0, user);
 			expect(vote).to.be.equal(1);
 		});
 		it("fail voting twice ", async () => {
@@ -138,6 +140,48 @@ describe("Votation", () => {
 			await expect(votation.connect(userSigner).makeVote(0, 1))
 				.to.emit(votation, "Vote")
 				.withArgs(0, 1);
+		});
+	});
+	describe("Votation with more than one round", () => {
+		beforeEach(async () => {
+			await votation.connect(userSigner).register();
+			[addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
+			candidates = [
+				addr1.address,
+				addr2.address,
+				addr3.address,
+				addr4.address,
+				addr5.address,
+			];
+			await votation.connect(addr1).register();
+			await votation
+				.connect(deployerSigner)
+				.createVotations("President", candidates, 1);
+			eightDays = 8 * 24 * 60 * 60;
+		});
+		it("fail try go to nextRound witout finished", async () => {
+			await expect(votation.goToNextRound(0)).to.be.revertedWith(
+				"This round is not finished yet!"
+			);
+		});
+
+		it("go to nextRound", async () => {
+			await ethers.provider.send("evm_increaseTime", [eightDays]);
+			await ethers.provider.send("evm_mine");
+			await votation.goToNextRound(0);
+			const myVotation = await votation.votations(0);
+			expect(myVotation.actualRound).to.be.equal(1);
+		});
+
+		it("fail try go to nextRound more than maxrounds", async () => {
+			await ethers.provider.send("evm_increaseTime", [eightDays]);
+			await ethers.provider.send("evm_mine");
+			await votation.goToNextRound(0);
+			await ethers.provider.send("evm_increaseTime", [eightDays]);
+			await ethers.provider.send("evm_mine");
+			await expect(votation.goToNextRound(0)).to.be.revertedWith(
+				"This votation is on the final round"
+			);
 		});
 	});
 });

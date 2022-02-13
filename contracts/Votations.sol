@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Votations is Ownable {
 	mapping(address => bool) user;
+	uint256 votationDuration = 7 days;
 	/**
 	 * @dev get canditates by votationId and candidate index .
    candidate index start on 1 on this way we can heck if you already vote if you vote != 0
@@ -12,12 +13,13 @@ contract Votations is Ownable {
 	/**
 	 * @dev get votes by votationId and userAddress.
 	 */
-	mapping(uint256 => mapping(address => uint32)) public votes;
+	mapping(uint256 => mapping(uint32 => mapping(address => uint32)))
+		public votes;
 
 	struct Votation {
 		string name;
-		// uint32 rounds;
-		// uint32 actualRounds;
+		uint32 rounds; //start from 0
+		uint32 actualRound;
 		uint256 startTime;
 	}
 	/**
@@ -33,12 +35,12 @@ contract Votations is Ownable {
      . the default value of {user} is false if you are register the value is true
      *
      */
-    event Register(address indexed user);
+	event Register(address indexed user);
 
 	function register() public {
 		require(user[msg.sender] != true, "User already register");
 		user[msg.sender] = true;
-    emit Register(msg.sender);
+		emit Register(msg.sender);
 	}
 
 	function isRegisterUser(address _user) external view returns (bool) {
@@ -54,16 +56,15 @@ contract Votations is Ownable {
      *
      */
 
-	function createVotations(string memory _name, address[] memory _candidates)
-		external
-		// uint32 _rounds
-		onlyOwner
-		returns (uint256)
-	{
-    require(_candidates.length < 6,"Max 5 candidates per votation");
+	function createVotations(
+		string memory _name,
+		address[] memory _candidates,
+		uint32 _rounds
+	) external onlyOwner returns (uint256) {
+		require(_candidates.length < 6, "Max 5 candidates per votation");
 		Votation memory newVotation;
 		newVotation.name = _name;
-		// newVotation.rounds = _rounds;
+		newVotation.rounds = _rounds;
 		newVotation.startTime = block.timestamp;
 		for (uint32 i = 0; i < _candidates.length; i++) {
 			candidates[votationsQuantity][i + 1] = _candidates[i];
@@ -82,7 +83,7 @@ contract Votations is Ownable {
 	}
 	modifier votationNotFinished(uint256 _votationId) {
 		require(
-			block.timestamp < votations[_votationId].startTime + 7 days,
+			block.timestamp < votations[_votationId].startTime + votationDuration,
 			"Votation finished"
 		);
 		_;
@@ -110,9 +111,26 @@ contract Votations is Ownable {
 			candidates[_votationId][_candidate] != msg.sender,
 			"You can not vote for yourselve!"
 		);
-
-		require(votes[_votationId][msg.sender] == 0, "You only can vote once!");
-		votes[_votationId][msg.sender] = _candidate;
+		Votation memory actualVotation = votations[_votationId];
+		require(
+			votes[_votationId][actualVotation.actualRound][msg.sender] == 0,
+			"You only can vote once!"
+		);
+		votes[_votationId][actualVotation.actualRound][msg.sender] = _candidate;
 		emit Vote(_votationId, _candidate);
+	}
+
+	function goToNextRound(uint256 _votationId) external onlyOwner{
+		require(
+			block.timestamp > votations[_votationId].startTime + votationDuration,
+			"This round is not finished yet!"
+		);
+		require(
+			votations[_votationId].actualRound < votations[_votationId].rounds,
+			"This votation is on the final round"
+		);
+
+		votations[_votationId].actualRound++;
+		votations[_votationId].startTime = block.timestamp;
 	}
 }
