@@ -18,7 +18,7 @@ contract Votations is Ownable {
 	struct Votation {
 		string name;
 		uint32 rounds; //start from 0
-		uint32 actualRounds;
+		uint32 actualRound;
 		uint256 startTime;
 	}
 	/**
@@ -55,16 +55,15 @@ contract Votations is Ownable {
      *
      */
 
-	function createVotations(string memory _name, address[] memory _candidates)
+	function createVotations(string memory _name, address[] memory _candidates,uint32 _rounds)
 		external
-		// uint32 _rounds
 		onlyOwner
 		returns (uint256)
 	{
 		require(_candidates.length < 6, "Max 5 candidates per votation");
 		Votation memory newVotation;
 		newVotation.name = _name;
-		// newVotation.rounds = _rounds;
+		newVotation.rounds = _rounds;
 		newVotation.startTime = block.timestamp;
 		for (uint32 i = 0; i < _candidates.length; i++) {
 			candidates[votationsQuantity][i + 1] = _candidates[i];
@@ -111,12 +110,12 @@ contract Votations is Ownable {
 			candidates[_votationId][_candidate] != msg.sender,
 			"You can not vote for yourselve!"
 		);
-		Votation actualVotation = votations[_votationId];
+		Votation memory actualVotation = votations[_votationId];
 		require(
 			votes[_votationId][actualVotation.actualRound][msg.sender] == 0,
 			"You only can vote once!"
 		);
-		votes[_votationId][actalVotation.actalRound][msg.sender] = _candidate;
+		votes[_votationId][actualVotation.actualRound][msg.sender] = _candidate;
 		emit Vote(_votationId, _candidate);
 	}
 }

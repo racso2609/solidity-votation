@@ -44,33 +44,35 @@ describe("Votation", () => {
 
 		it("error creating votation, user not owner", async () => {
 			await expect(
-				votation.connect(userSigner).createVotations("President", candidates)
+				votation.connect(userSigner).createVotations("President", candidates, 0)
 			).to.be.revertedWith("Ownable: caller is not the owner");
 		});
 		it("fail creating more than 5 candidates", async () => {
-			 expect(votation
-				.connect(deployerSigner)
-        .createVotations("President", [...candidates, addr6.address])).to.be.revertedWith("Max 5 candidates per votation");
+			expect(
+				votation
+					.connect(deployerSigner)
+					.createVotations("President", [...candidates, addr6.address], 0)
+			).to.be.revertedWith("Max 5 candidates per votation");
 		});
 
 		it("creating", async () => {
 			const tx = await votation
 				.connect(deployerSigner)
-				.createVotations("President", candidates);
+				.createVotations("President", candidates, 0);
 			await printGas(tx);
 			await tx.wait();
 			const votationId = Number(tx.value);
 			const newVotation = await votation.votations(votationId);
 
 			expect(newVotation.name).to.be.equal("President");
-			// expect(newVotation.rounds).to.be.equal(1);
-			// expect(newVotation.actualRounds).to.be.equal(0);
+			expect(newVotation.rounds).to.be.equal(0);
+			expect(newVotation.actualRound).to.be.equal(0);
 		});
 		it("event emmited", async () => {
 			await expect(
 				votation
 					.connect(deployerSigner)
-					.createVotations("President", candidates)
+					.createVotations("President", candidates, 0)
 			)
 				.to.emit(votation, "CreateVotation")
 				.withArgs(0, "President");
@@ -90,7 +92,7 @@ describe("Votation", () => {
 			await votation.connect(addr1).register();
 			await votation
 				.connect(deployerSigner)
-				.createVotations("President", candidates);
+				.createVotations("President", candidates, 0);
 			eightDays = 8 * 24 * 60 * 60;
 		});
 
@@ -112,7 +114,7 @@ describe("Votation", () => {
 		it("vote ", async () => {
 			const tx = await votation.connect(userSigner).makeVote(0, 1);
 			await tx.wait();
-			const vote = await votation.votes(0, user);
+			const vote = await votation.votes(0, 0, user);
 			expect(vote).to.be.equal(1);
 		});
 		it("fail voting twice ", async () => {
