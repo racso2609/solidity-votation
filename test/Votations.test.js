@@ -142,4 +142,46 @@ describe("Votation", () => {
 				.withArgs(0, 1);
 		});
 	});
+	describe("Votation with more than one round", () => {
+		beforeEach(async () => {
+			await votation.connect(userSigner).register();
+			[addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
+			candidates = [
+				addr1.address,
+				addr2.address,
+				addr3.address,
+				addr4.address,
+				addr5.address,
+			];
+			await votation.connect(addr1).register();
+			await votation
+				.connect(deployerSigner)
+				.createVotations("President", candidates, 1);
+			eightDays = 8 * 24 * 60 * 60;
+		});
+		it("fail try go to nextRound witout finished", async () => {
+			await expect(votation.goToNextRound(0)).to.be.revertedWith(
+				"This round is not finished yet!"
+			);
+		});
+
+		it("go to nextRound", async () => {
+			await ethers.provider.send("evm_increaseTime", [eightDays]);
+			await ethers.provider.send("evm_mine");
+			await votation.goToNextRound(0);
+			const myVotation = await votation.votations(0);
+			expect(myVotation.actualRound).to.be.equal(1);
+		});
+
+		it("fail try go to nextRound more than maxrounds", async () => {
+			await ethers.provider.send("evm_increaseTime", [eightDays]);
+			await ethers.provider.send("evm_mine");
+			await votation.goToNextRound(0);
+			await ethers.provider.send("evm_increaseTime", [eightDays]);
+			await ethers.provider.send("evm_mine");
+			await expect(votation.goToNextRound(0)).to.be.revertedWith(
+				"This votation is on the final round"
+			);
+		});
+	});
 });

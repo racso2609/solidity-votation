@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Votations is Ownable {
 	mapping(address => bool) user;
+	uint256 votationDuration = 7 days;
 	/**
 	 * @dev get canditates by votationId and candidate index .
    candidate index start on 1 on this way we can heck if you already vote if you vote != 0
@@ -55,11 +56,11 @@ contract Votations is Ownable {
      *
      */
 
-	function createVotations(string memory _name, address[] memory _candidates,uint32 _rounds)
-		external
-		onlyOwner
-		returns (uint256)
-	{
+	function createVotations(
+		string memory _name,
+		address[] memory _candidates,
+		uint32 _rounds
+	) external onlyOwner returns (uint256) {
 		require(_candidates.length < 6, "Max 5 candidates per votation");
 		Votation memory newVotation;
 		newVotation.name = _name;
@@ -82,7 +83,7 @@ contract Votations is Ownable {
 	}
 	modifier votationNotFinished(uint256 _votationId) {
 		require(
-			block.timestamp < votations[_votationId].startTime + 7 days,
+			block.timestamp < votations[_votationId].startTime + votationDuration,
 			"Votation finished"
 		);
 		_;
@@ -117,5 +118,19 @@ contract Votations is Ownable {
 		);
 		votes[_votationId][actualVotation.actualRound][msg.sender] = _candidate;
 		emit Vote(_votationId, _candidate);
+	}
+
+	function goToNextRound(uint256 _votationId) external onlyOwner{
+		require(
+			block.timestamp > votations[_votationId].startTime + votationDuration,
+			"This round is not finished yet!"
+		);
+		require(
+			votations[_votationId].actualRound < votations[_votationId].rounds,
+			"This votation is on the final round"
+		);
+
+		votations[_votationId].actualRound++;
+		votations[_votationId].startTime = block.timestamp;
 	}
 }
