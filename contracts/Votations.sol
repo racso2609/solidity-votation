@@ -12,12 +12,13 @@ contract Votations is Ownable {
 	/**
 	 * @dev get votes by votationId and userAddress.
 	 */
-	mapping(uint256 => mapping(address => uint32)) public votes;
+	mapping(uint256 => mapping(uint32 => mapping(address => uint32)))
+		public votes;
 
 	struct Votation {
 		string name;
-		// uint32 rounds;
-		// uint32 actualRounds;
+		uint32 rounds; //start from 0
+		uint32 actualRounds;
 		uint256 startTime;
 	}
 	/**
@@ -33,12 +34,12 @@ contract Votations is Ownable {
      . the default value of {user} is false if you are register the value is true
      *
      */
-    event Register(address indexed user);
+	event Register(address indexed user);
 
 	function register() public {
 		require(user[msg.sender] != true, "User already register");
 		user[msg.sender] = true;
-    emit Register(msg.sender);
+		emit Register(msg.sender);
 	}
 
 	function isRegisterUser(address _user) external view returns (bool) {
@@ -60,7 +61,7 @@ contract Votations is Ownable {
 		onlyOwner
 		returns (uint256)
 	{
-    require(_candidates.length < 6,"Max 5 candidates per votation");
+		require(_candidates.length < 6, "Max 5 candidates per votation");
 		Votation memory newVotation;
 		newVotation.name = _name;
 		// newVotation.rounds = _rounds;
@@ -110,9 +111,12 @@ contract Votations is Ownable {
 			candidates[_votationId][_candidate] != msg.sender,
 			"You can not vote for yourselve!"
 		);
-
-		require(votes[_votationId][msg.sender] == 0, "You only can vote once!");
-		votes[_votationId][msg.sender] = _candidate;
+		Votation actualVotation = votations[_votationId];
+		require(
+			votes[_votationId][actualVotation.actualRound][msg.sender] == 0,
+			"You only can vote once!"
+		);
+		votes[_votationId][actalVotation.actalRound][msg.sender] = _candidate;
 		emit Vote(_votationId, _candidate);
 	}
 }
